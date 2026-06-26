@@ -277,22 +277,27 @@ input::placeholder {
 
 .habit-wrap {
   position: relative;
-  opacity: 1;
-  transition: opacity 150ms ease;
+  transition: transform 160ms ease;
 }
 
-.habit-wrap.is-dragging {
-  opacity: 0.4;
+.habit-wrap.is-dragging .habit-card {
+  border-color: #d9d4ca;
+  border-style: dashed;
+  background: #faf9f6;
+  box-shadow: none;
+  opacity: 0.46;
 }
 
 .drop-line {
   position: absolute;
-  top: -6px;
-  right: 8px;
-  left: 8px;
-  height: 3px;
-  border-radius: 3px;
+  z-index: 2;
+  top: -5px;
+  right: 14px;
+  left: 14px;
+  height: 2px;
+  border-radius: 999px;
   background: #138a63;
+  box-shadow: 0 1px 5px rgb(19 138 99 / 24%);
 }
 
 .habit-card {
@@ -329,9 +334,48 @@ input::placeholder {
   cursor: grab;
 }
 
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 .drag-handle:hover {
   background: #f4f2ec;
   color: #9a958b;
+}
+
+.habit-drag-preview {
+  position: fixed;
+  top: -200px;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 220px;
+  max-width: 420px;
+  height: 58px;
+  padding: 0 18px;
+  overflow: hidden;
+  border: 1px solid #dcd7cd;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 14px 32px rgb(47 43 37 / 18%);
+  color: #2c2925;
+  pointer-events: none;
+}
+
+.habit-drag-preview svg {
+  flex: 0 0 auto;
+  color: #aaa499;
+}
+
+.habit-drag-preview span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .delete-button:hover {

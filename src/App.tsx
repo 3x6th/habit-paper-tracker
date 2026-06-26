@@ -228,9 +228,33 @@ export default function App() {
     }
   };
 
-  const handleDragStart = (event: ReactDragEvent<HTMLButtonElement>, id: string) => {
+  const handleDragStart = (
+    event: ReactDragEvent<HTMLButtonElement>,
+    id: string,
+    habitName: string,
+  ) => {
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', id);
+
+    const habitCard = event.currentTarget.closest<HTMLElement>('.habit-card');
+    const preview = document.createElement('div');
+    const previewGrip = event.currentTarget.querySelector('svg')?.cloneNode(true);
+    const previewName = document.createElement('span');
+    const cardWidth = habitCard?.getBoundingClientRect().width ?? 360;
+
+    preview.className = 'habit-drag-preview';
+    preview.style.width = `${Math.min(cardWidth, 420)}px`;
+    preview.setAttribute('aria-hidden', 'true');
+    previewName.textContent = habitName.trim() || strings.namePlaceholder;
+
+    if (previewGrip) {
+      preview.append(previewGrip);
+    }
+    preview.append(previewName);
+    document.body.append(preview);
+    event.dataTransfer.setDragImage(preview, 24, 29);
+    window.setTimeout(() => preview.remove(), 0);
+
     setDraggingId(id);
   };
 
@@ -329,7 +353,7 @@ export default function App() {
                         draggable
                         title={strings.dragTip}
                         aria-label={strings.dragTip}
-                        onDragStart={(event) => handleDragStart(event, habit.id)}
+                        onDragStart={(event) => handleDragStart(event, habit.id, habit.name)}
                         onDragEnd={() => {
                           setDraggingId(null);
                           setDragOverId(null);

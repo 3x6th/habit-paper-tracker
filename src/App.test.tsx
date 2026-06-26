@@ -1,6 +1,6 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { STORAGE_KEY } from './lib/state';
 
@@ -56,6 +56,28 @@ describe('App', () => {
 
     expect(screen.getByRole('button', { name: 'M' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Mon · Wed · Fri')).toBeInTheDocument();
+  });
+
+  it('reorders habits with the drag handle', () => {
+    const { container } = render(<App />);
+    const handles = screen.getAllByRole('button', { name: /drag to reorder/i });
+    const habitWraps = container.querySelectorAll('.habit-wrap');
+    const dataTransfer = {
+      effectAllowed: 'none',
+      setData: vi.fn(),
+      setDragImage: vi.fn(),
+    };
+
+    fireEvent.dragStart(handles[0], { dataTransfer });
+    fireEvent.dragOver(habitWraps[1], { dataTransfer });
+    fireEvent.drop(habitWraps[1], { dataTransfer });
+
+    expect(screen.getAllByLabelText(/habit name/i).map((input) => input.getAttribute('value'))).toEqual([
+      'Read 30 min',
+      'Drink water',
+      'Workout',
+    ]);
+    expect(dataTransfer.setDragImage).toHaveBeenCalledOnce();
   });
 
   it('persists and reloads tracker state', async () => {
