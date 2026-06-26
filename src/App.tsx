@@ -414,12 +414,8 @@ export default function App() {
                       <div>{model.colHabit}</div>
                       <div className="tracker-grid-cells">
                         {model.columns.map((column) => (
-                          <div
-                            className={column.dateLabel ? 'tracker-column-label has-date' : 'tracker-column-label'}
-                            key={`${column.index}-${column.label}`}
-                          >
-                            <span>{column.weekdayLabel}</span>
-                            {column.dateLabel ? <strong>{column.dateLabel}</strong> : null}
+                          <div className="tracker-column-label" key={`${column.index}-${column.label}`}>
+                            {column.dateLabel ?? column.weekdayLabel}
                           </div>
                         ))}
                       </div>
