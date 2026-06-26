@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+.idea
+*.local
+coverage
+.vite
+*.tsbuildinfo
+/printable-habit-tracker-design/
