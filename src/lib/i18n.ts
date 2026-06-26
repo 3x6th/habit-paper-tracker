@@ -3,7 +3,7 @@ import type { Language, TrackerStrings } from '../types';
 export const STRINGS: Record<Language, TrackerStrings> = {
   en: {
     heroBadge: 'No apps · No streaks · No pressure',
-    heroTitle: 'Create your printable habit tracker.',
+    heroTitle: 'Create your printable habit tracker',
     heroSub:
       'Design a calm, beautiful habit sheet and print it in seconds. Fill it in with a pen - analog, quiet, and entirely yours.',
     heroCta: 'Start Creating',
@@ -62,7 +62,7 @@ export const STRINGS: Record<Language, TrackerStrings> = {
   },
   ru: {
     heroBadge: 'Без приложений · Без серий · Без давления',
-    heroTitle: 'Создайте печатный трекер привычек.',
+    heroTitle: 'Создайте печатный трекер привычек',
     heroSub:
       'Соберите спокойный, красивый лист привычек и распечатайте его за секунды. Заполняйте ручкой - тихо, аналогово и по-своему.',
     heroCta: 'Начать',

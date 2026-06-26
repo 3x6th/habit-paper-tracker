@@ -1,6 +1,42 @@
 import type { TrackerModel } from '../types';
 import type { jsPDF as JsPDFDocument } from 'jspdf';
 
+const PDF_FONT = 'NotoSans';
+const REGULAR_FONT_FILE = 'NotoSans-Regular.ttf';
+const BOLD_FONT_FILE = 'NotoSans-Bold.ttf';
+
+let regularFontPromise: Promise<string> | null = null;
+let boldFontPromise: Promise<string> | null = null;
+
+async function loadFontAsBase64(fileName: string): Promise<string> {
+  const response = await fetch(`${import.meta.env.BASE_URL}fonts/${fileName}`);
+  if (!response.ok) {
+    throw new Error(`Could not load PDF font: ${fileName}`);
+  }
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return btoa(binary);
+}
+
+async function registerPdfFonts(doc: JsPDFDocument): Promise<void> {
+  regularFontPromise ??= loadFontAsBase64(REGULAR_FONT_FILE);
+  boldFontPromise ??= loadFontAsBase64(BOLD_FONT_FILE);
+
+  const [regularFont, boldFont] = await Promise.all([regularFontPromise, boldFontPromise]);
+
+  doc.addFileToVFS(REGULAR_FONT_FILE, regularFont);
+  doc.addFont(REGULAR_FONT_FILE, PDF_FONT, 'normal');
+  doc.addFileToVFS(BOLD_FONT_FILE, boldFont);
+  doc.addFont(BOLD_FONT_FILE, PDF_FONT, 'bold');
+}
+
 function fitText(doc: JsPDFDocument, value: string, maxWidth: number): string {
   if (doc.getTextWidth(value) <= maxWidth) {
     return value;
@@ -24,18 +60,19 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
     unit: 'mm',
     format: 'a4',
   });
+  await registerPdfFonts(doc);
 
   const pageWidth = landscape ? 297 : 210;
   const pageHeight = landscape ? 210 : 297;
   const marginX = 16;
   const marginY = 20;
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setFontSize(21);
   doc.setTextColor(31, 28, 24);
   doc.text(model.titleText, marginX, marginY);
 
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(10.5);
   doc.setTextColor(140, 134, 124);
   doc.text(model.rangeText, marginX, marginY + 6.5);
@@ -54,7 +91,7 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
     Math.max(10, (pageHeight - tableTop - headerHeight - 22) / Math.max(1, rows.length)),
   );
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(PDF_FONT, 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(150, 145, 135);
   doc.text(model.colHabit.toUpperCase(), marginX + 1, tableTop + headerHeight - 3);
@@ -72,7 +109,7 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
   rows.forEach((row, rowIndex) => {
     const rowY = tableTop + headerHeight + rowIndex * rowHeight;
 
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(PDF_FONT, 'bold');
     doc.setFontSize(11);
     doc.setTextColor(40, 38, 33);
     doc.text(fitText(doc, row.name, nameWidth - 3), marginX + 1, rowY + rowHeight / 2 + 1.8);
@@ -108,7 +145,7 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
 
   doc.line(marginX, tableTop + headerHeight, marginX, gridBottom);
 
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(PDF_FONT, 'normal');
   doc.setFontSize(8);
   doc.setTextColor(175, 170, 160);
   doc.text(model.footer, marginX, pageHeight - 10);
