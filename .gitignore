@@ -2,6 +2,9 @@ node_modules
 dist
 .DS_Store
 .idea
+.env
+.env.*
+!.env.example
 *.local
 coverage
 .vite
