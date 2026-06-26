@@ -1,12 +1,10 @@
 import type { TrackerModel } from '../types';
 import type { jsPDF as JsPDFDocument } from 'jspdf';
 
-const PDF_FONT = 'NotoSans';
-const REGULAR_FONT_FILE = 'NotoSans-Regular.ttf';
-const BOLD_FONT_FILE = 'NotoSans-Bold.ttf';
+const PDF_FONT = 'Nunito';
+const FONT_FILE = 'Nunito.ttf';
 
-let regularFontPromise: Promise<string> | null = null;
-let boldFontPromise: Promise<string> | null = null;
+let fontPromise: Promise<string> | null = null;
 
 async function loadFontAsBase64(fileName: string): Promise<string> {
   const response = await fetch(`${import.meta.env.BASE_URL}fonts/${fileName}`);
@@ -26,15 +24,13 @@ async function loadFontAsBase64(fileName: string): Promise<string> {
 }
 
 async function registerPdfFonts(doc: JsPDFDocument): Promise<void> {
-  regularFontPromise ??= loadFontAsBase64(REGULAR_FONT_FILE);
-  boldFontPromise ??= loadFontAsBase64(BOLD_FONT_FILE);
+  fontPromise ??= loadFontAsBase64(FONT_FILE);
 
-  const [regularFont, boldFont] = await Promise.all([regularFontPromise, boldFontPromise]);
+  const font = await fontPromise;
 
-  doc.addFileToVFS(REGULAR_FONT_FILE, regularFont);
-  doc.addFont(REGULAR_FONT_FILE, PDF_FONT, 'normal');
-  doc.addFileToVFS(BOLD_FONT_FILE, boldFont);
-  doc.addFont(BOLD_FONT_FILE, PDF_FONT, 'bold');
+  doc.addFileToVFS(FONT_FILE, font);
+  doc.addFont(FONT_FILE, PDF_FONT, 'normal');
+  doc.addFont(FONT_FILE, PDF_FONT, 'bold');
 }
 
 function fitText(doc: JsPDFDocument, value: string, maxWidth: number): string {

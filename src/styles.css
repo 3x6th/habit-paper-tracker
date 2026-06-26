@@ -62,7 +62,7 @@ input::placeholder {
   align-items: center;
   gap: 10px;
   color: #2b2823;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0;
@@ -137,7 +137,7 @@ input::placeholder {
   max-width: 660px;
   margin: 0 auto;
   color: #26231e;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 60px;
   font-weight: 700;
   line-height: 1.04;
@@ -212,7 +212,7 @@ input::placeholder {
   border-radius: 7px;
   background: #eaf6f0;
   color: #138a63;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 13px;
   font-weight: 700;
 }
@@ -221,7 +221,7 @@ input::placeholder {
 .generate-title h2 {
   margin: 0;
   color: #26231e;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 0;
@@ -567,7 +567,7 @@ input::placeholder {
   padding-bottom: 12px;
   border-bottom: 2px solid #2b2823;
   color: #1f1c18;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0;
@@ -605,7 +605,7 @@ input::placeholder {
 .tracker-grid-head > div:first-child {
   flex: 0 0 34%;
   color: #9a958b;
-  font-family: Quicksand, sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0;
