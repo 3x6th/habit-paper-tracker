@@ -81,7 +81,8 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
   const tableWidth = pageWidth - marginX * 2;
   const nameWidth = Math.min(56, tableWidth * 0.3);
   const cellWidth = (tableWidth - nameWidth) / columns.length;
-  const headerHeight = 9;
+  const hasDateLabels = columns.some((column) => column.dateLabel);
+  const headerHeight = hasDateLabels ? 12 : 9;
   const rowHeight = Math.min(
     17,
     Math.max(10, (pageHeight - tableTop - headerHeight - 22) / Math.max(1, rows.length)),
@@ -92,10 +93,18 @@ export async function generateTrackerPdf(model: TrackerModel): Promise<void> {
   doc.setTextColor(150, 145, 135);
   doc.text(model.colHabit.toUpperCase(), marginX + 1, tableTop + headerHeight - 3);
 
-  doc.setFontSize(columns.length > 16 ? 7 : 9);
+  doc.setFontSize(columns.length > 16 ? 6.5 : 9);
   columns.forEach((column, index) => {
     const x = marginX + nameWidth + index * cellWidth;
-    doc.text(column.label, x + cellWidth / 2, tableTop + headerHeight - 3, { align: 'center' });
+    const centerX = x + cellWidth / 2;
+
+    if (column.dateLabel) {
+      doc.text(column.weekdayLabel, centerX, tableTop + headerHeight - 6.4, { align: 'center' });
+      doc.text(column.dateLabel, centerX, tableTop + headerHeight - 2.4, { align: 'center' });
+      return;
+    }
+
+    doc.text(column.weekdayLabel, centerX, tableTop + headerHeight - 3, { align: 'center' });
   });
 
   doc.setDrawColor(190, 184, 174);

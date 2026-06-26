@@ -67,6 +67,8 @@ export interface TrackerStrings {
 
 export interface TrackerColumn {
   label: string;
+  weekdayLabel: string;
+  dateLabel?: string;
   weekday: number;
   index: number;
 }

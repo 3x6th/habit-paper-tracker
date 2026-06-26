@@ -50,6 +50,24 @@ describe('computeTrackerModel', () => {
       'Sat',
       'Sun',
     ]);
+    expect(model.columns.map((column) => column.weekdayLabel)).toEqual([
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ]);
+    expect(model.columns.map((column) => column.dateLabel)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
     expect(model.columns.map((column) => column.weekday)).toEqual([0, 1, 2, 3, 4, 5, 6]);
     expect(model.rangeText).toBe('Week of 22 June');
   });
@@ -58,8 +76,8 @@ describe('computeTrackerModel', () => {
     const model = computeTrackerModel(state([], { period: 'month' }), strings, new Date('2024-02-10T12:00:00'));
 
     expect(model.columns).toHaveLength(29);
-    expect(model.columns[0].label).toBe('1');
-    expect(model.columns[28].label).toBe('29');
+    expect(model.columns[0]).toMatchObject({ label: 'Thu 1', weekdayLabel: 'Thu', dateLabel: '1' });
+    expect(model.columns[28]).toMatchObject({ label: 'Thu 29', weekdayLabel: 'Thu', dateLabel: '29' });
     expect(model.rangeText).toBe('February 2024');
   });
 
@@ -67,7 +85,7 @@ describe('computeTrackerModel', () => {
     const model = computeTrackerModel(state([], { period: 'custom', customDays: 100 }), strings, now);
 
     expect(model.columns).toHaveLength(62);
-    expect(model.columns[0].label).toBe('24');
+    expect(model.columns[0]).toMatchObject({ label: 'Wed 24', weekdayLabel: 'Wed', dateLabel: '24' });
     expect(model.rangeText).toBe('24 June - 24 August');
   });
 

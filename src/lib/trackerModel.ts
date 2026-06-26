@@ -77,7 +77,12 @@ export function computeTrackerModel(
     const start = startOfWeek(today);
 
     for (let index = 0; index < 7; index += 1) {
-      columns.push({ label: strings.weekShort[index], weekday: index, index });
+      columns.push({
+        label: strings.weekShort[index],
+        weekdayLabel: strings.weekShort[index],
+        weekday: index,
+        index,
+      });
     }
 
     rangeText = `${strings.weekOf} ${formatDate(start, strings)}`;
@@ -88,9 +93,13 @@ export function computeTrackerModel(
 
     for (let index = 0; index < daysInMonth; index += 1) {
       const date = new Date(year, month, index + 1);
+      const weekday = weekdayFromMonday(date);
+      const dateLabel = String(index + 1);
       columns.push({
-        label: String(index + 1),
-        weekday: weekdayFromMonday(date),
+        label: `${strings.weekShort[weekday]} ${dateLabel}`,
+        weekdayLabel: strings.weekShort[weekday],
+        dateLabel,
+        weekday,
         index,
       });
     }
@@ -102,9 +111,13 @@ export function computeTrackerModel(
     for (let index = 0; index < days; index += 1) {
       const date = new Date(today);
       date.setDate(today.getDate() + index);
+      const weekday = weekdayFromMonday(date);
+      const dateLabel = String(date.getDate());
       columns.push({
-        label: String(date.getDate()),
-        weekday: weekdayFromMonday(date),
+        label: `${strings.weekShort[weekday]} ${dateLabel}`,
+        weekdayLabel: strings.weekShort[weekday],
+        dateLabel,
+        weekday,
         index,
       });
     }
