@@ -53,6 +53,9 @@ export interface TrackerStrings {
   tagBW: string;
   tagPrint: string;
   footer: string;
+  socialLine: string;
+  socialInstagram: string;
+  socialTelegram: string;
   dragTip: string;
   deleteTip: string;
   toastDone: string;

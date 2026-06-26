@@ -23,6 +23,67 @@ import { generateTrackerPdf } from './lib/pdf';
 import { loadTrackerState, saveTrackerState } from './lib/state';
 
 const scheduleTypes: ScheduleType[] = ['everyday', 'weekdays', 'specific', 'everyN'];
+const INSTAGRAM_URL = 'https://www.instagram.com/baskaa_a/';
+const TELEGRAM_URL = 'https://t.me/daily_baska';
+
+function InstagramIcon() {
+  return (
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        rx="5.5"
+        ry="5.5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="4"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="17.5"
+        y1="6.5"
+        x2="17.51"
+        y2="6.5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TelegramIcon() {
+  return (
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M21.5 4.2 2.9 11.3c-.9.35-.88 1.65.03 1.96l4.6 1.56 1.78 5.3c.27.66 1.1.83 1.6.33l2.55-2.5 4.6 3.4c.6.45 1.47.12 1.63-.62L23 5.2c.2-.93-.66-1.5-1.5-1z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.5 14.8 18 7"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 function newHabit(): Habit {
   return {
@@ -462,7 +523,20 @@ export default function App() {
           </section>
         </main>
 
-        <footer className="footer">{strings.footer}</footer>
+        <footer className="footer">
+          <div className="footer-social-line">{strings.socialLine}</div>
+          <div className="footer-links" aria-label="Social links">
+            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" title="Instagram">
+              <InstagramIcon />
+              {strings.socialInstagram}
+            </a>
+            <a href={TELEGRAM_URL} target="_blank" rel="noreferrer" title="Telegram">
+              <TelegramIcon />
+              {strings.socialTelegram}
+            </a>
+          </div>
+          <div className="footer-note">{strings.footer}</div>
+        </footer>
       </div>
 
       {toast ? (
