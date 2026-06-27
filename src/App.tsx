@@ -10,6 +10,7 @@ import {
 import {
   type ChangeEvent,
   type DragEvent as ReactDragEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -25,6 +26,19 @@ import { loadTrackerState, saveTrackerState } from './lib/state';
 const scheduleTypes: ScheduleType[] = ['everyday', 'weekdays', 'specific', 'everyN'];
 const INSTAGRAM_URL = 'https://www.instagram.com/baskaa_a/';
 const TELEGRAM_URL = 'https://t.me/daily_baska';
+
+interface TouchDragSession {
+  pointerId: number;
+  sourceId: string;
+  targetId: string | null;
+}
+
+interface TouchDragPreview {
+  left: number;
+  name: string;
+  top: number;
+  width: number;
+}
 
 function InstagramIcon() {
   return (
@@ -131,8 +145,10 @@ export default function App() {
   const [tracker, setTracker] = useState<TrackerState>(() => loadTrackerState());
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [touchDragPreview, setTouchDragPreview] = useState<TouchDragPreview | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const editorRef = useRef<HTMLElement | null>(null);
+  const touchDragRef = useRef<TouchDragSession | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const strings = getStrings(tracker.lang);
   const model = useMemo(() => computeTrackerModel(tracker, strings), [tracker, strings]);
@@ -194,14 +210,14 @@ export default function App() {
     }));
   };
 
-  const reorderHabit = (targetId: string) => {
-    if (!draggingId || draggingId === targetId) {
+  const reorderHabit = (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) {
       return;
     }
 
     setTracker((current) => {
       const habits = current.habits.slice();
-      const from = habits.findIndex((habit) => habit.id === draggingId);
+      const from = habits.findIndex((habit) => habit.id === sourceId);
       const to = habits.findIndex((habit) => habit.id === targetId);
 
       if (from < 0 || to < 0) {
@@ -233,6 +249,11 @@ export default function App() {
     id: string,
     habitName: string,
   ) => {
+    if (touchDragRef.current) {
+      event.preventDefault();
+      return;
+    }
+
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', id);
 
@@ -259,6 +280,86 @@ export default function App() {
     window.setTimeout(() => preview.remove(), 0);
 
     setDraggingId(id);
+  };
+
+  const handlePointerDown = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+    id: string,
+    habitName: string,
+  ) => {
+    if (event.pointerType === 'mouse' || event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    const habitCard = event.currentTarget.closest<HTMLElement>('.habit-card');
+    const cardRect = habitCard?.getBoundingClientRect();
+    const width = Math.min(cardRect?.width ?? 320, 420);
+    const left = Math.max(4, Math.min(cardRect?.left ?? 4, window.innerWidth - width - 4));
+
+    touchDragRef.current = {
+      pointerId: event.pointerId,
+      sourceId: id,
+      targetId: null,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setDraggingId(id);
+    setDragOverId(null);
+    setTouchDragPreview({
+      left,
+      name: habitName.trim() || strings.namePlaceholder,
+      top: Math.max(4, Math.min(event.clientY - 33, window.innerHeight - 70)),
+      width,
+    });
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const session = touchDragRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>('.habit-wrap');
+    const targetId = target?.dataset.habitId ?? null;
+
+    session.targetId = targetId && targetId !== session.sourceId ? targetId : null;
+    setDragOverId(session.targetId);
+    setTouchDragPreview((current) =>
+      current
+        ? {
+            ...current,
+            top: Math.max(4, Math.min(event.clientY - 33, window.innerHeight - 70)),
+          }
+        : current,
+    );
+
+    const edgeSize = 72;
+    const scrollDelta =
+      event.clientY < edgeSize ? -10 : event.clientY > window.innerHeight - edgeSize ? 10 : 0;
+    if (scrollDelta !== 0) {
+      window.scrollBy(0, scrollDelta);
+    }
+  };
+
+  const finishPointerDrag = (event: ReactPointerEvent<HTMLButtonElement>, cancelled = false) => {
+    const session = touchDragRef.current;
+    if (!session || session.pointerId !== event.pointerId) {
+      return;
+    }
+
+    touchDragRef.current = null;
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (!cancelled && session.targetId) {
+      reorderHabit(session.sourceId, session.targetId);
+    }
+    setDraggingId(null);
+    setDragOverId(null);
+    setTouchDragPreview(null);
   };
 
   const handleGenerate = async () => {
@@ -336,6 +437,7 @@ export default function App() {
                 return (
                   <div
                     className={`habit-wrap ${draggingId === habit.id ? 'is-dragging' : ''}`}
+                    data-habit-id={habit.id}
                     key={habit.id}
                     onDragOver={(event) => {
                       event.preventDefault();
@@ -343,7 +445,9 @@ export default function App() {
                     }}
                     onDrop={(event) => {
                       event.preventDefault();
-                      reorderHabit(habit.id);
+                      if (draggingId) {
+                        reorderHabit(draggingId, habit.id);
+                      }
                       setDraggingId(null);
                       setDragOverId(null);
                     }}
@@ -353,14 +457,22 @@ export default function App() {
                       <button
                         className="icon-button drag-handle"
                         type="button"
-                        draggable
+                        draggable={touchDragPreview === null}
                         title={strings.dragTip}
                         aria-label={strings.dragTip}
                         onDragStart={(event) => handleDragStart(event, habit.id, habit.name)}
                         onDragEnd={() => {
-                          setDraggingId(null);
-                          setDragOverId(null);
+                          if (!touchDragRef.current) {
+                            setDraggingId(null);
+                            setDragOverId(null);
+                          }
                         }}
+                        onPointerDown={(event) => handlePointerDown(event, habit.id, habit.name)}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={(event) => finishPointerDrag(event)}
+                        onPointerCancel={(event) => finishPointerDrag(event, true)}
+                        onLostPointerCapture={(event) => finishPointerDrag(event, true)}
+                        onContextMenu={(event) => event.preventDefault()}
                       >
                         <GripVertical size={18} strokeWidth={2} />
                       </button>
@@ -565,6 +677,23 @@ export default function App() {
           <div className="footer-note">{strings.footer}</div>
         </footer>
       </div>
+
+      {touchDragPreview ? (
+        <div
+          className="touch-drag-preview"
+          style={{
+            left: touchDragPreview.left,
+            top: touchDragPreview.top,
+            width: touchDragPreview.width,
+          }}
+          aria-hidden="true"
+        >
+          <div className="habit-drag-preview-card">
+            <GripVertical size={18} strokeWidth={2} />
+            <span>{touchDragPreview.name}</span>
+          </div>
+        </div>
+      ) : null}
 
       {toast ? (
         <div className="toast" role="status">

@@ -83,6 +83,56 @@ describe('App', () => {
     expect(dragPreview.firstElementChild).toHaveClass('habit-drag-preview-card');
   });
 
+  it('reorders habits with touch pointer events', () => {
+    const { container } = render(<App />);
+    const handles = screen.getAllByRole('button', { name: /drag to reorder/i });
+    const habitWraps = container.querySelectorAll('.habit-wrap');
+    const originalElementFromPoint = document.elementFromPoint;
+
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: vi.fn(() => habitWraps[1]),
+    });
+
+    try {
+      fireEvent.pointerDown(handles[0], {
+        button: 0,
+        clientX: 30,
+        clientY: 260,
+        pointerId: 7,
+        pointerType: 'touch',
+      });
+      expect(document.querySelector('.touch-drag-preview')).toBeInTheDocument();
+
+      fireEvent.pointerMove(handles[0], {
+        clientX: 30,
+        clientY: 330,
+        pointerId: 7,
+        pointerType: 'touch',
+      });
+      expect(habitWraps[1].querySelector('.drop-line')).toBeInTheDocument();
+
+      fireEvent.pointerUp(handles[0], {
+        clientX: 30,
+        clientY: 330,
+        pointerId: 7,
+        pointerType: 'touch',
+      });
+
+      expect(screen.getAllByLabelText(/habit name/i).map((input) => input.getAttribute('value'))).toEqual([
+        'Read 30 min',
+        'Drink water',
+        'Workout',
+      ]);
+      expect(document.querySelector('.touch-drag-preview')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(document, 'elementFromPoint', {
+        configurable: true,
+        value: originalElementFromPoint,
+      });
+    }
+  });
+
   it('persists and reloads tracker state', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<App />);

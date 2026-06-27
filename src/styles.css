@@ -332,6 +332,10 @@ input::placeholder {
   height: 38px;
   color: #c7c2b8;
   cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .drag-handle:active {
@@ -343,15 +347,24 @@ input::placeholder {
   color: #9a958b;
 }
 
-.habit-drag-preview {
-  position: fixed;
-  top: -200px;
-  left: 0;
+.habit-drag-preview,
+.touch-drag-preview {
   z-index: 1000;
   height: 66px;
   padding: 4px;
   background: #fbfaf7;
   pointer-events: none;
+}
+
+.habit-drag-preview {
+  position: fixed;
+  top: -200px;
+  left: 0;
+}
+
+.touch-drag-preview {
+  position: fixed;
+  filter: drop-shadow(0 12px 18px rgb(47 43 37 / 16%));
 }
 
 .habit-drag-preview-card {
