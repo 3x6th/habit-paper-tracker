@@ -88,10 +88,20 @@ describe('App', () => {
     const handles = screen.getAllByRole('button', { name: /drag to reorder/i });
     const habitWraps = container.querySelectorAll('.habit-wrap');
     const originalElementFromPoint = document.elementFromPoint;
+    const originalVisualViewport = window.visualViewport;
 
     Object.defineProperty(document, 'elementFromPoint', {
       configurable: true,
       value: vi.fn(() => habitWraps[1]),
+    });
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: {
+        height: 700,
+        offsetLeft: 0,
+        offsetTop: 64,
+        width: 390,
+      },
     });
 
     try {
@@ -102,7 +112,9 @@ describe('App', () => {
         pointerId: 7,
         pointerType: 'touch',
       });
-      expect(document.querySelector('.touch-drag-preview')).toBeInTheDocument();
+      const touchPreview = document.querySelector<HTMLElement>('.touch-drag-preview');
+      expect(touchPreview).toBeInTheDocument();
+      expect(touchPreview).toHaveStyle({ top: '291px' });
 
       fireEvent.pointerMove(handles[0], {
         clientX: 30,
@@ -129,6 +141,10 @@ describe('App', () => {
       Object.defineProperty(document, 'elementFromPoint', {
         configurable: true,
         value: originalElementFromPoint,
+      });
+      Object.defineProperty(window, 'visualViewport', {
+        configurable: true,
+        value: originalVisualViewport,
       });
     }
   });

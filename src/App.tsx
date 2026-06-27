@@ -26,6 +26,8 @@ import { loadTrackerState, saveTrackerState } from './lib/state';
 const scheduleTypes: ScheduleType[] = ['everyday', 'weekdays', 'specific', 'everyN'];
 const INSTAGRAM_URL = 'https://www.instagram.com/baskaa_a/';
 const TELEGRAM_URL = 'https://t.me/daily_baska';
+const TOUCH_PREVIEW_HEIGHT = 66;
+const TOUCH_PREVIEW_MARGIN = 4;
 
 interface TouchDragSession {
   pointerId: number;
@@ -38,6 +40,28 @@ interface TouchDragPreview {
   name: string;
   top: number;
   width: number;
+}
+
+function getTouchViewport() {
+  const viewport = window.visualViewport;
+  return {
+    height: viewport?.height ?? window.innerHeight,
+    left: viewport?.offsetLeft ?? 0,
+    top: viewport?.offsetTop ?? 0,
+    width: viewport?.width ?? window.innerWidth,
+  };
+}
+
+function getTouchPreviewTop(clientY: number): number {
+  const viewport = getTouchViewport();
+  const centeredTop = clientY + viewport.top - TOUCH_PREVIEW_HEIGHT / 2;
+  return Math.max(
+    viewport.top + TOUCH_PREVIEW_MARGIN,
+    Math.min(
+      centeredTop,
+      viewport.top + viewport.height - TOUCH_PREVIEW_HEIGHT - TOUCH_PREVIEW_MARGIN,
+    ),
+  );
 }
 
 function InstagramIcon() {
@@ -294,8 +318,15 @@ export default function App() {
     event.preventDefault();
     const habitCard = event.currentTarget.closest<HTMLElement>('.habit-card');
     const cardRect = habitCard?.getBoundingClientRect();
-    const width = Math.min(cardRect?.width ?? 320, 420);
-    const left = Math.max(4, Math.min(cardRect?.left ?? 4, window.innerWidth - width - 4));
+    const viewport = getTouchViewport();
+    const width = Math.min(cardRect?.width ?? 320, viewport.width - TOUCH_PREVIEW_MARGIN * 2, 420);
+    const left = Math.max(
+      viewport.left + TOUCH_PREVIEW_MARGIN,
+      Math.min(
+        (cardRect?.left ?? TOUCH_PREVIEW_MARGIN) + viewport.left,
+        viewport.left + viewport.width - width - TOUCH_PREVIEW_MARGIN,
+      ),
+    );
 
     touchDragRef.current = {
       pointerId: event.pointerId,
@@ -308,7 +339,7 @@ export default function App() {
     setTouchDragPreview({
       left,
       name: habitName.trim() || strings.namePlaceholder,
-      top: Math.max(4, Math.min(event.clientY - 33, window.innerHeight - 70)),
+      top: getTouchPreviewTop(event.clientY),
       width,
     });
   };
@@ -331,14 +362,19 @@ export default function App() {
       current
         ? {
             ...current,
-            top: Math.max(4, Math.min(event.clientY - 33, window.innerHeight - 70)),
+            top: getTouchPreviewTop(event.clientY),
           }
         : current,
     );
 
+    const viewport = getTouchViewport();
     const edgeSize = 72;
     const scrollDelta =
-      event.clientY < edgeSize ? -10 : event.clientY > window.innerHeight - edgeSize ? 10 : 0;
+      event.clientY < viewport.top + edgeSize
+        ? -10
+        : event.clientY > viewport.top + viewport.height - edgeSize
+          ? 10
+          : 0;
     if (scrollDelta !== 0) {
       window.scrollBy(0, scrollDelta);
     }
