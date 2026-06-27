@@ -238,21 +238,24 @@ export default function App() {
 
     const habitCard = event.currentTarget.closest<HTMLElement>('.habit-card');
     const preview = document.createElement('div');
+    const previewCard = document.createElement('div');
     const previewGrip = event.currentTarget.querySelector('svg')?.cloneNode(true);
     const previewName = document.createElement('span');
     const cardWidth = habitCard?.getBoundingClientRect().width ?? 360;
 
     preview.className = 'habit-drag-preview';
+    previewCard.className = 'habit-drag-preview-card';
     preview.style.width = `${Math.min(cardWidth, 420)}px`;
     preview.setAttribute('aria-hidden', 'true');
     previewName.textContent = habitName.trim() || strings.namePlaceholder;
 
     if (previewGrip) {
-      preview.append(previewGrip);
+      previewCard.append(previewGrip);
     }
-    preview.append(previewName);
+    previewCard.append(previewName);
+    preview.append(previewCard);
     document.body.append(preview);
-    event.dataTransfer.setDragImage(preview, 24, 29);
+    event.dataTransfer.setDragImage(preview, 28, 33);
     window.setTimeout(() => preview.remove(), 0);
 
     setDraggingId(id);

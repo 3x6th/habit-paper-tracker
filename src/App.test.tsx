@@ -78,6 +78,9 @@ describe('App', () => {
       'Workout',
     ]);
     expect(dataTransfer.setDragImage).toHaveBeenCalledOnce();
+    const dragPreview = dataTransfer.setDragImage.mock.calls[0]?.[0] as HTMLElement;
+    expect(dragPreview).toHaveClass('habit-drag-preview');
+    expect(dragPreview.firstElementChild).toHaveClass('habit-drag-preview-card');
   });
 
   it('persists and reloads tracker state', async () => {
